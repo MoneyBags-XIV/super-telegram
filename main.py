@@ -1,2 +1,10 @@
+from items import *
+
+
+
+
+game = Game()
+
 if __name__ == "__main__":
-    pass
+    while True:
+        game.do_turn()

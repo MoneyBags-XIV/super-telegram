@@ -1,15 +1,22 @@
 from parser import Parser
 
 class Object:
-    def __init__(self, location, capacity=0, takable=False):
+    def __init__(self, location, capacity=0, contents=[], takable=False):
         self.location = location
         self.takable = takable
         self.capacity = capacity
+        self.contents = contents
 
         self.game = self.set_game()
+
+        if self.location:
+            self.add_to_parent_contents()
+    
+    def add_to_parent_contents(self):
+        self.location.contents.append(self)
     
     def set_game(self):
-        ans = self.location
+        ans = self
         while True:
             if type(ans) is Game:
                 break
@@ -21,7 +28,7 @@ class Object:
         index = self.location.contents.index(self)
         del self.location.contents[index]
         self.location = new_location
-        self.location.contents.append(self)
+        self.add_to_parent_contents()
     
     def do_turn(self):
         for x in self.contents:
@@ -29,9 +36,8 @@ class Object:
 
 
 class Game(Object):
-    def __init__(self):
-        super().__init__(False)
-        self.time = 0
+    def __init__(self, contents=[]):
+        super().__init__(False, contents=contents)
     
     def do_turn(self):
         super().do_turn()

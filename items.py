@@ -1,7 +1,7 @@
 from not_the_parser import Parser
 
 class Object:
-    def __init__(self, name, location, description, capacity=0, takable=False, open=True):
+    def __init__(self, name, location, description, synonyms=[], capacity=0, displayable=True, takable=False, open=True):
         
         self.location = location if type(location) is list else [location]
 
@@ -12,10 +12,14 @@ class Object:
         self.description = description
         self.label = name.lower().replace(" ", "_")
         self.open = open
+        self.displayable = displayable
+
+        self.synonyms = synonyms
+        self.synonyms.append(self.name)
 
         self.game = self.set_game()
 
-        if self.location:
+        if self.location[0]:
             self.add_to_parent_contents()
     
     def add_to_parent_contents(self):
@@ -23,7 +27,7 @@ class Object:
             location.contents.append(self)
     
     def set_game(self):
-        ans = self.location[0]
+        ans = self
         while True:
             if type(ans) is Game:
                 break
@@ -47,10 +51,25 @@ class Object:
         
         self.location = ans
         self.add_to_parent_contents()
+
+        return True
     
     def do_turn(self):
         for x in self.contents:
             x.do_turn()
+    
+    def describe(self):
+        return self.description
+    
+    def find_object_by_name(self, object):
+        for x in self.contents:
+            if object in x.synonyms:
+                return x
+        for x in self.contents:
+            y = x.find_object(object)
+            if y:
+                return y
+        return
 
 
 class Game(Object):
@@ -77,21 +96,47 @@ class Room(Object):
         super().do_turn()
     
     def describe(self):
-        if self.explored and self.game.verbosity == 0:
-            return self.name
-        return self.name + '\n' + self.description
+
+        ans = self.name + '\n' + self.description
+        ans += "\nHere you see:\n"
+        ans += '\n'.join([x.name for x in self.contents if x.displayable])
+        return ans
 
 
 class Player(Object):
 
     def __init__(self, location, inventory_size, description):
-        super().__init__("player", location, description, capacity=inventory_size)
-        self.parser = Parser(self.game)
+        super().__init__("you", location, description, capacity=inventory_size)
+        self.parser = Parser(self, self.game)
     
     def do_turn(self):
-        ans = input("> ")
-        self.parser.parse(ans)
         super().do_turn()
+        ans = input("> ")
+
+        verb, direct, indirect = self.parser.parse(ans)
+
+        if not verb:
+            return
+        
+        verb(direct, indirect)
+    
+    def take(self, direct, indirect):
+        if not self.can_touch(direct):
+            print("You don't see any " + direct.name + " here!")
+            return
+        
+        if direct.set_location([self]):
+            print("Taken.")
+            return
+        
+        print("You can't carry more stuff right now.")
+    
+    def look(self, direct, indirect):
+        if not self.can_touch(direct):
+            print("You don't see any " + direct.name + " here!")
+            return
+        
+        print(direct.describe())
     
     def can_touch(self, item):
         room = self.location
@@ -101,10 +146,11 @@ class Player(Object):
 
         while True:
             for x in ans:
-                if type(ans) is Room:
+                if type(x) is Room:
                     new_ans.append(x)
                     continue
                 for y in x.location:
+                    print(y)
                     if y.open:
                         new_ans.append(y)
             

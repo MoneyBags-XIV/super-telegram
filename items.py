@@ -1,11 +1,14 @@
-from parser import Parser
+from not_the_parser import Parser
 
 class Object:
-    def __init__(self, location, capacity=0, contents=[], takable=False):
+    def __init__(self, name, location, description, capacity=0, takable=False):
         self.location = location
         self.takable = takable
         self.capacity = capacity
-        self.contents = contents
+        self.contents = []
+        self.name = name
+        self.description = description
+        self.label = name.lower().replace(" ", "_")
 
         self.game = self.set_game()
 
@@ -25,6 +28,8 @@ class Object:
         return ans
     
     def set_location(self, new_location):
+        if len(new_location.contents) >= new_location.capacity and not type(new_location) is Room:
+            return
         index = self.location.contents.index(self)
         del self.location.contents[index]
         self.location = new_location
@@ -36,8 +41,10 @@ class Object:
 
 
 class Game(Object):
-    def __init__(self, contents=[]):
-        super().__init__(False, contents=contents)
+    def __init__(self, name, verbosity):
+        super().__init__(name, False, '')
+        self.verbosity = verbosity
+        self.time = 0
     
     def do_turn(self):
         super().do_turn()
@@ -49,15 +56,42 @@ class Item(Object):
 
 
 class Room(Object):
-    pass
+    def __init__(self, name, game, description):
+        self.explored = False
+        self.occupied = False
+        
+        super().__init__(name, game, description)
+    
+    def do_turn(self):
+        print(self.describe())
+        super().do_turn()
+    
+    def describe(self):
+        ans = False
+        for x in self.contents:
+            if type(x) == Player:
+                if not self.occupied:
+                    ans = True
+                self.occupied = True
+                break
+            self.occupied = False
+        
+        if ans:
+            if not self.explored or self.game.verbosity > 0:
+                return self.name + '\n' + self.description
+            else:
+                return self.name
+        return ''
+            
 
 
 class Player(Object):
 
-    def __init__(self, location, capacity=0, takable=False):
-        super().__init__(location, capacity, takable)
-        self.parser = Parser(2)
+    def __init__(self, location, inventory_size, description):
+        super().__init__("player", location, description, capacity=inventory_size)
+        self.parser = Parser(self.game)
     
     def do_turn(self):
         ans = input("> ")
         self.parser.parse(ans)
+        super().do_turn()

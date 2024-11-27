@@ -2,8 +2,10 @@ from items import *
 
 def create_game():
 
-    room_1 = Room(game)
+    game = Game("Test", 0)
+    room = Room("Room", game, "This is a simple room.")
+    item = Item("Nasty Knife", room, "This knife is pretty gnarly! Never run with it.", takable=True)
 
-    game = Game([
-        False
-    ])
+    player = Player(room, 10, "You are looking magnificent today!")
+
+    return game

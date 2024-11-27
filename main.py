@@ -1,10 +1,9 @@
-from items import *
+import test_game_file
 
 
+game_file = test_game_file.create_game()
 
-
-game = Game()
 
 if __name__ == "__main__":
     while True:
-        game.do_turn()
+        game_file.do_turn()

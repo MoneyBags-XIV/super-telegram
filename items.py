@@ -1,7 +1,7 @@
 from not_the_parser import Parser
 
 class Object:
-    def __init__(self, name, location, description, capacity=0, takable=False):
+    def __init__(self, name, location, description, capacity=0, takable=False, open=True):
         self.location = location
         self.takable = takable
         self.capacity = capacity
@@ -58,31 +58,15 @@ class Item(Object):
 class Room(Object):
     def __init__(self, name, game, description):
         self.explored = False
-        self.occupied = False
-        
         super().__init__(name, game, description)
     
     def do_turn(self):
-        print(self.describe())
         super().do_turn()
     
     def describe(self):
-        ans = False
-        for x in self.contents:
-            if type(x) == Player:
-                if not self.occupied:
-                    ans = True
-                self.occupied = True
-                break
-            self.occupied = False
-        
-        if ans:
-            if not self.explored or self.game.verbosity > 0:
-                return self.name + '\n' + self.description
-            else:
-                return self.name
-        return ''
-            
+        if self.explored and self.game.verbosity == 0:
+            return self.name
+        return self.name + '\n' + self.description
 
 
 class Player(Object):
@@ -95,3 +79,17 @@ class Player(Object):
         ans = input("> ")
         self.parser.parse(ans)
         super().do_turn()
+    
+    def can_touch(self, item):
+        room = self.location
+
+        ans = item
+        while True:
+            if type(ans) is Room or not ans.open:
+                break
+            ans = ans.location
+        if ans == room:
+            return True
+        return
+
+        

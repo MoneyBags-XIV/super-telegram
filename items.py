@@ -2,13 +2,16 @@ from not_the_parser import Parser
 
 class Object:
     def __init__(self, name, location, description, capacity=0, takable=False, open=True):
-        self.location = location
+        
+        self.location = location if type(location) is list else [location]
+
         self.takable = takable
         self.capacity = capacity
         self.contents = []
         self.name = name
         self.description = description
         self.label = name.lower().replace(" ", "_")
+        self.open = open
 
         self.game = self.set_game()
 
@@ -16,23 +19,33 @@ class Object:
             self.add_to_parent_contents()
     
     def add_to_parent_contents(self):
-        self.location.contents.append(self)
+        for location in self.location:
+            location.contents.append(self)
     
     def set_game(self):
-        ans = self
+        ans = self.location[0]
         while True:
             if type(ans) is Game:
                 break
-            ans = ans.location
+            ans = ans.location[0]
         
         return ans
     
-    def set_location(self, new_location):
-        if len(new_location.contents) >= new_location.capacity and not type(new_location) is Room:
+    def set_location(self, new_locations):
+        ans = []
+        for new_location in new_locations:
+            if len(new_location.contents) >= new_location.capacity and not type(new_location) is Room:
+                continue
+            ans.append(new_location)
+        
+        if not ans:
             return
-        index = self.location.contents.index(self)
-        del self.location.contents[index]
-        self.location = new_location
+
+        for x in self.location:
+            index = self.location[x].contents.index(self)
+            del self.location.contents[index]
+        
+        self.location = ans
         self.add_to_parent_contents()
     
     def do_turn(self):
@@ -83,13 +96,26 @@ class Player(Object):
     def can_touch(self, item):
         room = self.location
 
-        ans = item
+        ans = [item]
+        new_ans = []
+
         while True:
-            if type(ans) is Room or not ans.open:
+            for x in ans:
+                if type(ans) is Room:
+                    new_ans.append(x)
+                    continue
+                for y in x.location:
+                    if y.open:
+                        new_ans.append(y)
+            
+            if ans == new_ans:
                 break
-            ans = ans.location
-        if ans == room:
-            return True
+            ans = new_ans
+            new_ans = []
+        
+        for x in ans:
+            if x == self.location[0]:
+                return True
         return
 
         

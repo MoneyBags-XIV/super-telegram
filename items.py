@@ -1,7 +1,7 @@
 from not_the_parser import Parser
 
 class Object:
-    def __init__(self, name, location, description, synonyms=[], capacity=0, displayable=True, takable=False, open=True):
+    def __init__(self, name, location, description, synonyms=None, capacity=0, displayable=True, takable=False, open=True):
         
         self.location = location if type(location) is list else [location]
 
@@ -14,7 +14,7 @@ class Object:
         self.open = open
         self.displayable = displayable
 
-        self.synonyms = synonyms
+        self.synonyms = synonyms if synonyms else []
         self.synonyms.append(self.name)
 
         self.game = self.set_game()
@@ -63,10 +63,11 @@ class Object:
     
     def find_object_by_name(self, object):
         for x in self.contents:
-            if object in x.synonyms:
+            lower = [i.lower() for i in x.synonyms]
+            if object.lower() in lower:
                 return x
         for x in self.contents:
-            y = x.find_object(object)
+            y = x.find_object_by_name(object)
             if y:
                 return y
         return
@@ -106,17 +107,12 @@ class Room(Object):
 class Player(Object):
 
     def __init__(self, location, inventory_size, description):
-        super().__init__("you", location, description, capacity=inventory_size)
-        self.parser = Parser(self, self.game)
+        super().__init__("you", location, description, capacity=inventory_size, displayable=False)
     
     def do_turn(self):
         super().do_turn()
-        ans = input("> ")
 
-        verb, direct, indirect = self.parser.parse(ans)
-
-        if not verb:
-            return
+        verb, direct, indirect = self.parser.parse()
         
         verb(direct, indirect)
     
@@ -132,11 +128,18 @@ class Player(Object):
         print("You can't carry more stuff right now.")
     
     def look(self, direct, indirect):
+
+        if not direct:
+            direct = self.location[0]
+        
         if not self.can_touch(direct):
             print("You don't see any " + direct.name + " here!")
             return
         
         print(direct.describe())
+    
+    def has_item_in_inventory(self, item):
+        return super().find_object_by_name(item)
     
     def can_touch(self, item):
         room = self.location
@@ -150,7 +153,6 @@ class Player(Object):
                     new_ans.append(x)
                     continue
                 for y in x.location:
-                    print(y)
                     if y.open:
                         new_ans.append(y)
             

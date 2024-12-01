@@ -1,3 +1,2 @@
 # super-telegram
-adfsghjkl;
-this is a test of my new checkout!
+This is an interactive fiction game I am working on! The idea is that all of the stuff that is specific to a game is stored in a game file, but the framework is totally interchangable. I've tried to make one of these before, and it didn't go that well. 

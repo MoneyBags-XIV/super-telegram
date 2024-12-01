@@ -18,66 +18,72 @@ class Parser:
 
             #TODO find multiple objects with the same name and default to one in same room, or ask which one
 
+            # this is just to check all combinations of consecutive words for multi-word verbs (I am proud of it)
             for i in range(len(words)):
                 for j in range(i+1):
-                    ans = words[j:len(words)-i]
+                    ans = words[j:j+len(words)-i]
                     ans = " ".join(ans)
                     for x in self.verb_list:
-                        if ans in x.verbs:
+                        if ans in x.verbs and not x in verbs:
                             verbs.append(x)
-            
-            #TODO check for duplicates
-            
+                        
             if not verbs:
-                print("There's no verb in that sentance!")
+                print("There's no verb in that sentence!")
                 continue
 
             if len(verbs) > 1:
-                print("There are too many verbs in that sentance!")
+                print("There are too many verbs in that sentence!")
                 continue
 
             verb = verbs[0]
 
-            #TODO allow verbs to take direct object, but not need one
-    
-            if not verb.expects_direct:
-                return verb.player_method, None, None
-            
-            nouns = []
-            
-            for i in range(len(words)):
-                for j in range(i+1):
-                    ans = words[j:len(words)-i]
-                    ans = " ".join(ans)
-                    if self.game.find_object_by_name(ans):
-                        nouns.append(ans)
-            
-            # if not self.accepts_multiple_direct and len(nouns) > 1:
+            output = verb.parse_nouns(words)
 
 
 class Verb:
-    def __init__(self, verbs, player, expects_direct=False, expects_indirect=False, accepts_multiple_direct=False):
+    def __init__(self, verbs, player, expects_direct=False, needs_direct=False, accepts_multiple_direct=False, expects_indirect=False, needs_indirect=False):
         self.verbs = verbs
+
         self.expects_direct = expects_direct
-        self.expects_indirect = expects_indirect
-        self.player_method = getattr(player, self.verbs[0])
+        self.needs_direct = needs_direct
         self.accepts_multiple_direct = accepts_multiple_direct
+
+        self.expects_indirect = expects_indirect
+        self.needs_indirect = needs_indirect
+
+        self.player_method = getattr(player, self.verbs[0])
+        self.game = self.player.game
     
-    # def find_direct(self, words, game):
-    #     if not self.expects_direct:
-    #         return
+    def parse_nouns(self, words):
+
+        direct = None
+        indirect = None
+
+        if not self.expects_direct:
+            return direct, indirect
         
-    #     nouns = []
+        indirect = self.get_indirect(words)
+
+        if indirect and not self.expects_indirect:
+            return "That sentence doesn't make sense."
         
-    #     for i in range(len(words)):
-    #         for j in i+1:
-    #             ans = words[j:len(words)-i]
-    #             ans = " ".join(ans)
-    #             if game.find_object_by_name(ans):
-    #                 nouns.append(ans)
-        
-    #     if not self.accepts_multiple_direct and len(nouns) > 1:
-            
-                
         
 
+    def get_direct(self, words):
+        pass
+
+    def get_indirect(self, words):
+        pass
+
+    def find_nouns(self, words):
+        nouns = []
+
+        for i in range(len(words)):
+            for j in range(i+1):
+                ans = words[j:j+len(words)-i]
+                ans = " ".join(ans)
+
+                x = self.game.find_object_by_name(ans)
+
+                if x:
+                    nouns.append(x)

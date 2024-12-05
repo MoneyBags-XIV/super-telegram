@@ -2,6 +2,8 @@ from not_the_parser import Parser
 
 class Object:
     def __init__(self, name, location, description, synonyms=None, capacity=0, displayable=True, takable=False, open=True):
+
+        #TODO add functionality for pronouns (store and it)
         
         self.location = location if type(location) is list else [location]
 

@@ -40,6 +40,12 @@ class Parser:
 
             output = verb.parse_nouns(words, used_verb)
 
+            if type(output) == str:
+                print(output)
+                continue
+
+            return output
+
 
 class Verb:
     def __init__(self, verbs, player, expects_direct=False, needs_direct=False, accepts_multiple_direct=False, needs_indirect=False):
@@ -52,7 +58,7 @@ class Verb:
         self.needs_indirect = needs_indirect
 
         self.player_method = getattr(player, self.verbs[0])
-        self.game = self.player.game
+        self.game = player.game
     
     def parse_nouns(self, words, used_verb):
 
@@ -98,7 +104,24 @@ class Verb:
         pass
 
     def get_indirect(self, words):
-        pass
+        
+        clean_words = ["a", "the", "your", "my"]
+        
+        words = [x for x in words if x not in clean_words]
+
+        que_word = None
+        for word in words:
+            if word in ["use", "using", "with"]:
+                if que_word:
+                    return None
+                que_word = word
+        
+        if not que_word:
+            return None
+        
+        start_index = word.index(que_word) + 1
+        words = words[start_index:]
+
 
     def find_nouns(self, str):
         str = str.lower()

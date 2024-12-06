@@ -8,6 +8,11 @@ class Parser:
 
         while True:
             str = input("> ")
+
+            if not str:
+                print("Pardon?")
+                continue
+
             str = str.lower()
             clean_chars = ['.', ',', '\'']
             for x in clean_chars:

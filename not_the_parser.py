@@ -81,7 +81,7 @@ class Verb:
         direct = self.get_direct(words)
 
         if not direct and self.needs_direct:
-            ans = input("What do you want to " + used_verb + "?")
+            ans = input("What do you want to " + used_verb + "?\n> ")
             direct = self.find_nouns(ans)
             if not direct:
                 return "I don't understand what you want to do."
@@ -93,7 +93,7 @@ class Verb:
             return (self.player_method, direct, indirect)
         
         if not indirect:
-            ans = input("What do you want to " + used_verb + " the " + direct + " with?")
+            ans = input("What do you want to " + used_verb + " the " + direct + " with?\n> ")
             indirect = self.find_nouns(ans)
             if not indirect:
                 return "Good luck with that!"
@@ -106,9 +106,11 @@ class Verb:
         
 
     def get_direct(self, words):
-        pass
+        return self.find_nouns(' '.join(words))
 
     def get_indirect(self, words):
+
+        og_words = words
         
         clean_words = ["a", "the", "your", "my"]
         
@@ -118,11 +120,11 @@ class Verb:
         for word in words:
             if word in ["use", "using", "with"]:
                 if que_word:
-                    return
+                    return (None, og_words)
                 que_word = word
         
         if not que_word:
-            return
+            return (None, og_words)
         
         start_index = word.index(que_word) + 1
         words = words[start_index:]
@@ -131,14 +133,13 @@ class Verb:
 
         for i in range(len(words)):
             ans = words[:i]
-            print(ans)
             object = self.game.find_object_by_name(ans)
             if object:
                 if not object in nouns:
                     nouns.append(object)
         
         if len(nouns) > 1 or not nouns:
-            return
+            return (None, og_words)
         
         return nouns[0]
 

@@ -20,7 +20,7 @@ def create_game():
 def create_verb_list(player):
 
     ans = [
-        Verb(['take', 'grab', 'pick up', 'steal', 'keep'], player, expects_direct=True, accepts_multiple_direct=True),
+        Verb(['take', 'grab', 'pick up', 'steal', 'keep'], player, expects_direct=True, accepts_multiple_direct=True, needs_direct=True),
         Verb(['look', 'l', 'look around'], player)
     ]
 

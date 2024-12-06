@@ -113,14 +113,29 @@ class Verb:
         for word in words:
             if word in ["use", "using", "with"]:
                 if que_word:
-                    return None
+                    return
                 que_word = word
         
         if not que_word:
-            return None
+            return
         
         start_index = word.index(que_word) + 1
         words = words[start_index:]
+
+        nouns = []
+
+        for i in range(len(words)):
+            ans = words[:i]
+            print(ans)
+            object = self.game.find_object_by_name(ans)
+            if object:
+                if not object in nouns:
+                    nouns.append(object)
+        
+        if len(nouns) > 1 or not nouns:
+            return
+        
+        return nouns[0]
 
 
     def find_nouns(self, str):

@@ -7,17 +7,17 @@ class Parser:
     def parse(self):
 
         while True:
-            str = input("> ")
+            input_str = input("> ")
 
-            if not str:
+            if not input_str:
                 print("Pardon?")
                 continue
 
-            str = str.lower()
+            input_str= input_str.lower()
             clean_chars = ['.', ',', '\'']
             for x in clean_chars:
-                str = str.replace(x, '')
-            words = str.split(" ")
+                input_str= input_str.replace(x, '')
+            words = input_str.split(" ")
 
             verbs = []
 
@@ -45,7 +45,7 @@ class Parser:
 
             output = verb.parse_nouns(words, used_verb)
 
-            if type(output) == str:
+            if type(output) is str:
                 print(output)
                 continue
 
@@ -122,18 +122,18 @@ class Verb:
                 if que_word:
                     return (None, og_words)
                 que_word = word
-        
+                
         if not que_word:
             return (None, og_words)
         
-        start_index = word.index(que_word) + 1
+        start_index = words.index(que_word) + 1
         words = words[start_index:]
 
         nouns = []
 
         for i in range(len(words)):
             ans = words[:i]
-            object = self.game.find_object_by_name(ans)
+            object = self.game.find_object_by_name(' '.join(ans))
             if object:
                 if not object in nouns:
                     nouns.append(object)
@@ -144,12 +144,12 @@ class Verb:
         return nouns[0]
 
 
-    def find_nouns(self, str):
-        str = str.lower()
+    def find_nouns(self, thing):
+        thing = thing.lower()
         clean_chars = ['.', ',', '\'']
         for x in clean_chars:
-            str = str.replace(x, '')
-        words = str.split(" ")
+            thing = thing.replace(x, '')
+        words = thing.split(" ")
 
         nouns = []
 
@@ -162,5 +162,5 @@ class Verb:
 
                 if x:
                     nouns.append(x)
-        
+                        
         return nouns

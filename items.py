@@ -99,16 +99,24 @@ class Room(Object):
     
     def describe(self):
 
-        ans = self.name + '\n' + self.description
-        ans += "\nHere you see:\n"
-        ans += '\n'.join([x.name for x in self.contents if x.displayable])
+
+        ans = ["An " + x.name if x.name[0] in ['a', 'e', 'i', 'o', 'u'] else "A " + x.name for x in self.contents if x.displayable]
+        if not ans:
+            return ''
+        
+        ans = '\n'.join(ans)
+        ans = "You see here:\n" + ans
+
+        ans = self.name + '\n' + self.description + '\n' + ans
         return ans
 
 
 class Player(Object):
 
     def __init__(self, location, inventory_size, description):
-        super().__init__("you", location, description, capacity=inventory_size, displayable=False, synonyms=["me", "myself", "i"])
+        super().__init__("me", location, description, capacity=inventory_size, displayable=False, synonyms=["myself", "i"])
+
+        self.look(None, None)
     
     def do_turn(self):
         super().do_turn()
@@ -118,7 +126,11 @@ class Player(Object):
         verb(direct, indirect)
     
     def take(self, direct, indirect):
+        
         for x in direct:
+            if len(direct) > 1:
+                print('(' + x.name + ')', end=' ')
+            
             if not self.can_touch(x):
                 print("You don't see any " + x.name + " here!")
                 continue
@@ -156,13 +168,13 @@ class Player(Object):
         ans = []
         for x in self.contents:
             if x.displayable:
-                ans.append(x.name)
+                ans.append(x)
         
         if not ans:
             print("You are empty handed.")
             return
         
-        ans = ["An " + x if x[0] in ['a', 'e', 'i', 'o', 'u'] else "A " + x for x in ans]
+        ans = ["An " + x.name if x.name[0] in ['a', 'e', 'i', 'o', 'u'] else "A " + x.name for x in ans if x.displayable]
         ans = '\n'.join(ans)
         ans = "You are holding:\n" + ans
 

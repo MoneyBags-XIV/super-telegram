@@ -86,7 +86,7 @@ class Verb:
             if not direct:
                 return "I don't understand what you want to do."
         
-        if len(direct) > 0 and not self.accepts_multiple_direct:
+        if len(direct) > 1 and not self.accepts_multiple_direct:
             return "You can't use multiple direct objects with the verb: \"" + used_verb + ".\""
         
         if not self.needs_indirect:
@@ -132,16 +132,21 @@ class Verb:
         nouns = []
 
         for i in range(len(words)):
-            ans = words[:i]
+            ans = words[:i+1]
             object = self.game.find_object_by_name(' '.join(ans))
             if object:
                 if not object in nouns:
                     nouns.append(object)
-        
+                    name = ' '.join(ans)
+                
         if len(nouns) > 1 or not nouns:
             return (None, og_words)
         
-        return nouns[0]
+        og_words.reverse()
+        og_words.remove(name)
+        og_words.reverse()
+        
+        return (nouns[0], og_words)
 
 
     def find_nouns(self, thing):

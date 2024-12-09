@@ -1,9 +1,8 @@
-from not_the_parser import Parser
-
 class Object:
     def __init__(self, name, location, description, synonyms=None, capacity=0, displayable=True, takable=False, open=True):
 
         #TODO add functionality for pronouns (store and it)
+        #TODO add way to store last command for redo
         
         self.location = location if type(location) is list else [location]
 
@@ -48,8 +47,8 @@ class Object:
             return
 
         for x in self.location:
-            index = self.location[x].contents.index(self)
-            del self.location.contents[index]
+            index = x.contents.index(self)
+            del x.contents[index]
         
         self.location = ans
         self.add_to_parent_contents()
@@ -93,7 +92,7 @@ class Item(Object):
 class Room(Object):
     def __init__(self, name, game, description):
         self.explored = False
-        super().__init__(name, game, description)
+        super().__init__(name, game, description, synonyms=['floor', 'ground'])
     
     def do_turn(self):
         super().do_turn()
@@ -109,7 +108,7 @@ class Room(Object):
 class Player(Object):
 
     def __init__(self, location, inventory_size, description):
-        super().__init__("you", location, description, capacity=inventory_size, displayable=False)
+        super().__init__("you", location, description, capacity=inventory_size, displayable=False, synonyms=["me", "myself", "i"])
     
     def do_turn(self):
         super().do_turn()
@@ -119,26 +118,55 @@ class Player(Object):
         verb(direct, indirect)
     
     def take(self, direct, indirect):
-        if not self.can_touch(direct):
-            print("You don't see any " + direct.name + " here!")
-            return
-        
-        if direct.set_location([self]):
-            print("Taken.")
-            return
-        
-        print("You can't carry more stuff right now.")
+        for x in direct:
+            if not self.can_touch(x):
+                print("You don't see any " + x.name + " here!")
+                continue
+
+            if x in self.contents:
+                print("You are already holding that!")
+                continue
+            
+            if x.takable:
+                if x.set_location([self]):
+                    print("Taken.")
+                    continue
+                print("You can't carry more stuff right now.")
+
+            else:
+                print("That isn't really feasible, I'm afraid.")
+    
+    def drop(self, direct, indirect):
+        pass
     
     def look(self, direct, indirect):
 
         if not direct:
-            direct = self.location[0]
+            direct = self.location
+        
+        direct = direct[0]
         
         if not self.can_touch(direct):
             print("You don't see any " + direct.name + " here!")
             return
         
         print(direct.describe())
+    
+    def inventory(self, direct, indirect):
+        ans = []
+        for x in self.contents:
+            if x.displayable:
+                ans.append(x.name)
+        
+        if not ans:
+            print("You are empty handed.")
+            return
+        
+        ans = ["An " + x if x[0] in ['a', 'e', 'i', 'o', 'u'] else "A " + x for x in ans]
+        ans = '\n'.join(ans)
+        ans = "You are holding:\n" + ans
+
+        print(ans)
     
     def has_item_in_inventory(self, item):
         return super().find_object_by_name(item)

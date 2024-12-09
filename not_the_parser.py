@@ -13,11 +13,7 @@ class Parser:
                 print("Pardon?")
                 continue
 
-            input_str= input_str.lower()
-            clean_chars = ['.', ',', '\'']
-            for x in clean_chars:
-                input_str= input_str.replace(x, '')
-            words = input_str.split(" ")
+            words = clean_input(input_str)
 
             verbs = []
 
@@ -53,13 +49,14 @@ class Parser:
 
 
 class Verb:
-    def __init__(self, verbs, player, expects_direct=False, needs_direct=False, accepts_multiple_direct=False, needs_indirect=False):
+    def __init__(self, verbs, player, expects_direct=False, needs_direct=False, accepts_multiple_direct=False, expects_indirect=False, needs_indirect=False):
         self.verbs = verbs
 
         self.expects_direct = expects_direct
         self.needs_direct = needs_direct
         self.accepts_multiple_direct = accepts_multiple_direct
 
+        self.expects_indirect = expects_indirect
         self.needs_indirect = needs_indirect
 
         self.player_method = getattr(player, self.verbs[0])
@@ -75,25 +72,27 @@ class Verb:
         
         indirect, words = self.get_indirect(words)
 
-        if indirect and not self.needs_indirect:
+        if indirect and not self.expects_indirect:
             return "That sentence doesn't make sense."
         
         direct = self.get_direct(words)
 
         if not direct and self.needs_direct:
             ans = input("What do you want to " + used_verb + "?\n> ")
-            direct = self.find_nouns(ans)
+            ans = clean_input(ans)
+            direct = self.get_direct(ans)
             if not direct:
                 return "I don't understand what you want to do."
         
         if len(direct) > 1 and not self.accepts_multiple_direct:
             return "You can't use multiple direct objects with the verb: \"" + used_verb + ".\""
         
-        if not self.needs_indirect:
+        if not self.expects_indirect:
             return (self.player_method, direct, indirect)
         
         if not indirect:
             ans = input("What do you want to " + used_verb + " the " + direct + " with?\n> ")
+            ans = clean_input(ans)
             indirect = self.find_nouns(ans)
             if not indirect:
                 return "Good luck with that!"
@@ -106,7 +105,10 @@ class Verb:
         
 
     def get_direct(self, words):
-        return self.find_nouns(' '.join(words))
+        nouns = self.find_nouns(' '.join(words))
+        nouns = set(nouns)
+        nouns = list(nouns)
+        return nouns
 
     def get_indirect(self, words):
 
@@ -169,3 +171,13 @@ class Verb:
                     nouns.append(x)
                         
         return nouns
+
+def clean_input(string):
+
+    input_str= string.lower()
+    clean_chars = ['.', ',', '\'']
+    for x in clean_chars:
+        input_str= input_str.replace(x, '')
+    words = input_str.split(" ")
+
+    return words

@@ -45,6 +45,8 @@ class Parser:
                 print(output)
                 continue
 
+            output = output + (used_verb)
+
             return output
 
 
@@ -69,11 +71,9 @@ class Verb:
 
         if not self.expects_direct:
             return (self.player_method, direct, indirect)
-        
-        indirect, words = self.get_indirect(words)
 
-        if indirect and not self.expects_indirect:
-            return "That sentence doesn't make sense."
+        if self.expects_indirect:
+            indirect, words = self.get_indirect(words)
         
         direct = self.get_direct(words)
 
@@ -90,15 +90,15 @@ class Verb:
         if not self.expects_indirect:
             return (self.player_method, direct, indirect)
         
-        if not indirect:
+        if not indirect and self.needs_indirect:
             ans = input("What do you want to " + used_verb + " the " + direct + " with?\n> ")
             ans = clean_input(ans)
             indirect = self.find_nouns(ans)
             if not indirect:
                 return "Good luck with that!"
         
-        if len(indirect) > 1:
-            return "You can't do that."
+            if len(indirect) > 1:
+                return "You can't do that."
         
         return (self.player_method, direct, indirect)
 
@@ -120,7 +120,7 @@ class Verb:
 
         que_word = None
         for word in words:
-            if word in ["use", "using", "with"]:
+            if word in ["use", "using", "with", "in", "inside", "into", "at", "to"]:
                 if que_word:
                     return (None, og_words)
                 que_word = word

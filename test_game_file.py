@@ -21,7 +21,7 @@ def create_verb_list(player):
 
     ans = [
         Verb(['take', 'grab', 'pick up', 'steal', 'keep'], player, expects_direct=True, accepts_multiple_direct=True, needs_direct=True),
-        Verb(['drop', 'put', 'set', 'place', 'leave'], player, expects_direct=True, accepts_multiple_direct=True, needs_direct=True),
+        Verb(['drop', 'put', 'set', 'place', 'leave', 'give'], player, expects_direct=True, accepts_multiple_direct=True, needs_direct=True, expects_indirect=True),
         Verb(['look', 'l'], player, expects_direct=True),
         Verb(['inventory', 'i'], player)
     ]

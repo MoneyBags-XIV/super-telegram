@@ -121,11 +121,11 @@ class Player(Object):
     def do_turn(self):
         super().do_turn()
 
-        verb, direct, indirect = self.parser.parse()
+        verb, direct, indirect, used_verb = self.parser.parse()
         
-        verb(direct, indirect)
+        verb(direct, indirect, used_verb)
     
-    def take(self, direct, indirect):
+    def take(self, direct, indirect, used_verb):
         
         for x in direct:
             if len(direct) > 1:
@@ -148,10 +148,26 @@ class Player(Object):
             else:
                 print("That isn't really feasible, I'm afraid.")
     
-    def drop(self, direct, indirect):
-        pass
+    def drop(self, direct, indirect, used_verb):
+
+        if not indirect:
+            indirect = self.location[0]
+        
+        for x in direct:
+            if len(direct) > 1:
+                print('(' + x.name + ')', end=' ')
+        
+            if not x in self.contents:
+                print("You aren't holding that!")
+                continue
+
+            if x.set_location([indirect]):
+                print("Dropped.")
+                continue
+
+            print("There's no room in the " + indirect + ".")
     
-    def look(self, direct, indirect):
+    def look(self, direct, indirect, used_verb):
 
         if not direct:
             direct = self.location
@@ -164,7 +180,7 @@ class Player(Object):
         
         print(direct.describe())
     
-    def inventory(self, direct, indirect):
+    def inventory(self, direct, indirect, used_verb):
         ans = []
         for x in self.contents:
             if x.displayable:

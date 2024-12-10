@@ -45,14 +45,13 @@ class Parser:
                 print(output)
                 continue
 
-            output = output + (used_verb)
-
             return output
 
 
 class Verb:
-    def __init__(self, verbs, player, expects_direct=False, needs_direct=False, accepts_multiple_direct=False, expects_indirect=False, needs_indirect=False):
+    def __init__(self, verbs, player, past_participles=None, expects_direct=False, needs_direct=False, accepts_multiple_direct=False, expects_indirect=False, needs_indirect=False):
         self.verbs = verbs
+        self.past_participles = past_participles if past_participles else verbs
 
         self.expects_direct = expects_direct
         self.needs_direct = needs_direct
@@ -69,8 +68,10 @@ class Verb:
         direct = None
         indirect = None
 
+        participle = self.past_participles[self.verbs.index(used_verb)]
+
         if not self.expects_direct:
-            return (self.player_method, direct, indirect)
+            return (self.player_method, direct, indirect, participle)
 
         if self.expects_indirect:
             indirect, words = self.get_indirect(words)
@@ -88,7 +89,7 @@ class Verb:
             return "You can't use multiple direct objects with the verb: \"" + used_verb + ".\""
         
         if not self.expects_indirect:
-            return (self.player_method, direct, indirect)
+            return (self.player_method, direct, indirect, participle)
         
         if not indirect and self.needs_indirect:
             ans = input("What do you want to " + used_verb + " the " + direct + " with?\n> ")
@@ -100,7 +101,7 @@ class Verb:
             if len(indirect) > 1:
                 return "You can't do that."
         
-        return (self.player_method, direct, indirect)
+        return (self.player_method, direct, indirect, participle)
 
         
 

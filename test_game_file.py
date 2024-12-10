@@ -6,6 +6,7 @@ from not_the_parser import *
 def create_game():
 
     game = Game("Test", 0)
+
     room = Room("Room", game, "You are in a simple room.")
     bag = Item("Nationals Bag", room, "You got this bag from going to NB Nationals. Don't let anyone see the relay patch.", synonyms=["bag"], capacity=5, takable=True)
     item = Item("Nasty Knife", room, "This knife is pretty gnarly! Don't run with the point up.", synonyms=["knife"], takable=True)
@@ -20,10 +21,31 @@ def create_game():
 def create_verb_list(player):
 
     ans = [
-        Verb(['take', 'grab', 'pick up', 'steal', 'keep'], player, expects_direct=True, accepts_multiple_direct=True, needs_direct=True),
-        Verb(['drop', 'put', 'set', 'place', 'leave', 'give'], player, expects_direct=True, accepts_multiple_direct=True, needs_direct=True, expects_indirect=True),
-        Verb(['look', 'l'], player, expects_direct=True),
-        Verb(['inventory', 'i'], player)
+        Verb(['take', 'grab', 'pick up', 'steal', 'keep'],
+             player,
+             past_participles=['taken', 'grabbed', 'picked up', 'stolen', 'kept'],
+             expects_direct=True,
+             accepts_multiple_direct=True,
+             needs_direct=True
+             ),
+        
+        Verb(['drop', 'put', 'set', 'place', 'leave', 'give'],
+             player,
+             past_participles=['dropped', 'put', 'set', 'placed', 'left', 'given'],
+             expects_direct=True,
+             accepts_multiple_direct=True,
+             needs_direct=True,
+             expects_indirect=True
+             ),
+        
+        Verb(['look', 'l'],
+             player,
+             expects_direct=True
+             ),
+        
+        Verb(['inventory', 'i'],
+             player
+             )
     ]
 
     return ans

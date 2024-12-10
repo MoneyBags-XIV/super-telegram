@@ -1,5 +1,5 @@
 class Object:
-    def __init__(self, name, location, description, synonyms=None, capacity=0, displayable=True, takable=False, open=True):
+    def __init__(self, name, location, description, synonyms=None, capacity=0, displayable=True, takable=False, open=True, closable=False):
 
         #TODO add functionality for pronouns (store and it)
         #TODO add way to store last command for redo
@@ -116,13 +116,14 @@ class Player(Object):
     def __init__(self, location, inventory_size, description):
         super().__init__("me", location, description, capacity=inventory_size, displayable=False, synonyms=["myself", "i"])
 
-        self.look(None, None)
+        self.look(None, None, None)
     
     def do_turn(self):
         super().do_turn()
 
+        # self.parser is assigned at the creation of the player instance. I forgot why I did this.
         verb, direct, indirect, used_verb = self.parser.parse()
-        
+        used_verb = used_verb[:1].upper() + used_verb[1:] + '.'
         verb(direct, indirect, used_verb)
     
     def take(self, direct, indirect, used_verb):
@@ -141,7 +142,7 @@ class Player(Object):
             
             if x.takable:
                 if x.set_location([self]):
-                    print("Taken.")
+                    print(used_verb)
                     continue
                 print("You can't carry more stuff right now.")
 
@@ -162,7 +163,7 @@ class Player(Object):
                 continue
 
             if x.set_location([indirect]):
-                print("Dropped.")
+                print(used_verb)
                 continue
 
             print("There's no room in the " + indirect + ".")

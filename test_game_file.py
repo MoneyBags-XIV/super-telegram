@@ -17,13 +17,19 @@ def create_game():
                capacity=5,
                takable=True,
                conatainer=True
-               )
-    
-    item = Item("Nasty Knife", room,
-                "This knife is pretty gnarly! Don't run with the point up.",
-                synonyms=["knife"],
-                takable=True
                 )
+    
+    nasty = Item("Nasty Knife", room,
+                 "This knife is pretty gnarly! Don't run with the point up.",
+                 synonyms=["knife"],
+                 takable=True
+                 )
+    
+    sharp = Item("Sharp Knife", room,
+                 "This knife is extra sharp!",
+                 synonyms=['knife'],
+                 takable=True
+                 )
 
     player = Player(room, 10, "You are looking magnificent today!")
     verb_list = create_verb_list(player)

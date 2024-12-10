@@ -61,7 +61,10 @@ class Verb:
         self.needs_indirect = needs_indirect
 
         self.player_method = getattr(player, self.verbs[0])
+        self.player = player
         self.game = player.game
+
+        self.had_to_ask = False
     
     def parse_nouns(self, words, used_verb):
 
@@ -76,14 +79,10 @@ class Verb:
         if self.expects_indirect:
             indirect, words = self.get_indirect(words)
         
-        direct = self.get_direct(words)
+        direct = self.get_direct(words, used_verb=used_verb)
 
         if not direct and self.needs_direct:
-            ans = input("What do you want to " + used_verb + "?\n> ")
-            ans = clean_input(ans)
-            direct = self.get_direct(ans)
-            if not direct:
-                return "I don't understand what you want to do."
+            return "I don't understand what you want to do."
         
         if len(direct) > 1 and not self.accepts_multiple_direct:
             return "You can't use multiple direct objects with the verb: \"" + used_verb + ".\""
@@ -105,10 +104,23 @@ class Verb:
 
         
 
-    def get_direct(self, words):
+    def get_direct(self, words, used_verb):
         nouns = self.find_nouns(' '.join(words))
         nouns = set(nouns)
         nouns = list(nouns)
+
+        if self.had_to_ask:
+            self.had_to_ask = False # I know this is awkward
+            return nouns
+
+        if not nouns and self.needs_direct:
+            ans = input("What do you want to " + used_verb + "?\n> ")
+            ans = clean_input(ans)
+            nouns = self.find_nouns(' '.join(ans))
+            nouns = set(nouns)
+            nouns = list(nouns)
+        
+        self.had_to_ask = False
         return nouns
 
     def get_indirect(self, words):
@@ -163,15 +175,52 @@ class Verb:
 
         for i in range(len(words)):
             for j in range(i+1):
-                ans = words[j:j+len(words)-i]
+                ans = words[i:i+len(words)-j]
                 ans = " ".join(ans)
 
                 x = self.game.find_object_by_name(ans)
 
                 if x:
-                    nouns.append(x)
+                    if len(x) > 1:
+                        nouns += self.clarify_noun(x, ans)
+                        self.had_to_ask = True
                         
+                
+                    else:
+                        nouns.append(x[0])
+                    
+                    new_words = words[:i] + words[i+len(words)-j:]
+                    new_words = ' '.join(new_words)
+                    nouns += self.find_nouns(new_words)
+                    return nouns
+
         return nouns
+    
+    def clarify_noun(self, x, unclear_word):
+        
+        # This code was really annoying to write. I couldn't think of a good way to do it. No judgement please.
+        x = [y for y in x if self.player.can_touch(y)]
+
+        if len(x) > 1:
+            string = "Which " + unclear_word + " do you mean? The " + x[0].name + ', '
+            for k in range(1, len(x)-1):
+                string += 'the ' + k.name + ', '
+            string += "or the " + x[-1].name + '?\n> '
+
+            asdf = input(string)
+            asdf = clean_input(asdf)
+            if 'all' in asdf or 'both' in asdf:
+                return x
+            
+            for word in asdf:
+                for item in x:
+                    for synonym in item.synonyms:
+                        a = clean_input(synonym)
+                        a = [b for b in a if b != unclear_word]
+                        if word in a:
+                            return [item]
+            
+            return []
 
 def clean_input(string):
 

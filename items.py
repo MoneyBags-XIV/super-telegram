@@ -1,7 +1,7 @@
 class Object:
     def __init__(self, name, location, description, synonyms=None, capacity=0, displayable=True, takable=False, open=True, conatainer=False):
 
-        #TODO add functionality for pronouns (store and it)
+        #TODO add functionality for pronouns (store it)
         #TODO add way to store last command for redo
         
         self.location = location if type(location) is list else [location]
@@ -64,15 +64,15 @@ class Object:
         return self.description
     
     def find_object_by_name(self, object):
+        ans = []
         for x in self.contents:
             lower = [i.lower() for i in x.synonyms]
             if object.lower() in lower:
-                return x
+                ans.append(x)
         for x in self.contents:
             y = x.find_object_by_name(object)
-            if y:
-                return y
-        return
+            ans += y
+        return ans
     
     def formatted_contents(self, indent_depth=1):
 

@@ -1,5 +1,5 @@
 class Object:
-    def __init__(self, name, location, description, synonyms=None, capacity=0, displayable=True, takable=False, open=True, closable=False):
+    def __init__(self, name, location, description, synonyms=None, capacity=0, displayable=True, takable=False, open=True, conatainer=False):
 
         #TODO add functionality for pronouns (store and it)
         #TODO add way to store last command for redo
@@ -14,6 +14,7 @@ class Object:
         self.label = name.lower().replace(" ", "_")
         self.open = open
         self.displayable = displayable
+        self.container = conatainer
 
         self.synonyms = synonyms if synonyms else []
         self.synonyms.append(self.name)
@@ -72,6 +73,26 @@ class Object:
             if y:
                 return y
         return
+    
+    def formatted_contents(self, indent_depth=1):
+
+        ans = ""
+
+        for x in self.contents:
+            if not x.displayable:
+                continue
+            
+            prep = "An " if x.name in ['a', 'e', 'i', 'o', 'u'] else "A "
+            indent = " " * indent_depth
+
+            ans += (indent + prep + x.name + '\n')
+
+            if x.container and x.open and x.contents:
+                ans += (indent + "The " + x.name + " contains:\n")
+                ans += (x.formatted_contents(indent_depth=indent_depth+1))
+        
+        return ans
+
 
 
 class Game(Object):
@@ -99,15 +120,16 @@ class Room(Object):
     
     def describe(self):
 
+        description = self.name + '\n' + self.description
 
-        ans = ["An " + x.name if x.name[0] in ['a', 'e', 'i', 'o', 'u'] else "A " + x.name for x in self.contents if x.displayable]
+        ans = self.formatted_contents()
+
         if not ans:
-            return ''
+            return description
         
-        ans = '\n'.join(ans)
         ans = "You see here:\n" + ans
 
-        ans = self.name + '\n' + self.description + '\n' + ans
+        ans = description + '\n' + ans
         return ans
 
 
@@ -166,7 +188,7 @@ class Player(Object):
                 print(used_verb)
                 continue
 
-            print("There's no room in the " + indirect + ".")
+            print("There's no room in the " + indirect.name + ".")
     
     def look(self, direct, indirect, used_verb):
 
@@ -191,8 +213,8 @@ class Player(Object):
             print("You are empty handed.")
             return
         
-        ans = ["An " + x.name if x.name[0] in ['a', 'e', 'i', 'o', 'u'] else "A " + x.name for x in ans if x.displayable]
-        ans = '\n'.join(ans)
+        ans = self.formatted_contents()
+
         ans = "You are holding:\n" + ans
 
         print(ans)
